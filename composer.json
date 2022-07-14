@@ -1,0 +1,11 @@
+{
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        }
+    },
+    "require": {
+        "xielei/swoole-worker": "1.*"
+    }
+}
