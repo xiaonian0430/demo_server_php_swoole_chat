@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
-use Xielei\Swoole\Gateway;
+use SwooleGateway\Gateway;
 $gateway = new Gateway();
+
+// 设置配置文件
+$gateway->config_file = __DIR__ . '/config_gateway.php';
 
 // 设置注册中心连接参数
 $worker->register_host = '192.168.91.132';

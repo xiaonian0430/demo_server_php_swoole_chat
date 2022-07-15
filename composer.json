@@ -6,6 +6,6 @@
         }
     },
     "require": {
-        "xielei/swoole-worker": "1.*"
+        "hiper/swoole-gateway": "1.0.*"
     }
 }
