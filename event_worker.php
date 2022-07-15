@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Swoole\Timer;
-use SwooleGateway\Api;
+use Xielei\Swoole\Api;
 
-use SwooleGateway\Helper\WorkerEvent as HelperWorkerEvent;
+use Xielei\Swoole\Helper\WorkerEvent as HelperWorkerEvent;
 
 class WorkerEvent extends HelperWorkerEvent
 {
