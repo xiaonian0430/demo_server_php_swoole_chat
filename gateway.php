@@ -9,8 +9,8 @@ $gateway = new Gateway();
 $gateway->config_file = __DIR__ . '/config_gateway.php';
 
 // 设置注册中心连接参数
-$worker->register_host = '192.168.91.132';
-$worker->register_port = 50100;
+$gateway->register_host = '192.168.91.132';
+$gateway->register_port = 50100;
 
 // 设置内部连接参数
 $gateway->lan_host = '172.19.16.12'; //分布式部署时请设置成内网ip（非127.0.0.1）
