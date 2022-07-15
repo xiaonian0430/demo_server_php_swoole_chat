@@ -13,7 +13,7 @@ return [
     'reload_watch' => [],
 
     // 限流
-    'throttle' => true, // 是否开启限流服务
+    'throttle' => false, // 是否开启限流服务
     'throttle_interval' => 10000, // 流量发放间隔时间 单位:毫秒
     'throttle_times' => 100, // 每次发放流量数
     'throttle_close' => 2, // 达到流量阈值的动作类型 0丢弃请求 1关闭当前客户端 2关闭当前客户端（强制） 3关闭当前IP的所有客户端 4关闭当前IP的所有客户端（强制）
