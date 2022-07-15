@@ -1,11 +1,8 @@
 <?php
 
 declare(strict_types=1);
-
+require_once __DIR__ . '/vendor/autoload.php';
 use Xielei\Swoole\Register;
 
-require_once __DIR__ . '/vendor/autoload.php';
-
-$register = new Register();
-
+$register = new Register('0.0.0.0', 9327);
 $register->start();
