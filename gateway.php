@@ -7,7 +7,7 @@ $gateway = new Gateway();
 
 // 设置配置文件
 $gateway->config_file = __DIR__ . '/config_gateway.php';
-
+$gateway->pid_file = __DIR__.'/server_gateway.pid';
 // 设置注册中心连接参数
 $gateway->register_host = '192.168.91.132';
 $gateway->register_port = 50100;

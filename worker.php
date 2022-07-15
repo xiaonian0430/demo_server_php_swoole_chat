@@ -7,6 +7,7 @@ use SwooleGateway\Worker;
 $worker = new Worker();
 $worker->config_file = __DIR__ . '/config_worker.php';
 $worker->worker_file = __DIR__ . '/event_worker.php';
+$worker->pid_file = __DIR__.'/server_worker.pid';
 
 // 设置注册中心连接参数
 $worker->register_host = '192.168.91.132';
