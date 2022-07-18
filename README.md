@@ -1,4 +1,4 @@
-# 聊天系统demo
+# 直播网关系统
 
 基于 SwooleGateway 开发的一个群聊demo，供学习使用
 
