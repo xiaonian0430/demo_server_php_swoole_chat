@@ -1,5 +1,5 @@
 <?php
-namespace GatewayWorker\Protocols;
+namespace GatewayWorker\Swoole;
 
 /**
  * Gateway 与 Worker 间通讯的二进制协议
