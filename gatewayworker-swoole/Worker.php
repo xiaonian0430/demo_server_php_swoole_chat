@@ -122,7 +122,6 @@ class Worker{
     private function onRegisterConnect(SWCClient &$client){
         //心跳定时器，发送ping 包
         $client->ping_timer_id=SWTimer::tick(3000, function (int $timer_id) use(&$client) {
-            echo "ping to register.".PHP_EOL;
             $ping_data = array(
                 'cmd' => GatewayProtocol::CMD_PING,
                 'body'=>array()
