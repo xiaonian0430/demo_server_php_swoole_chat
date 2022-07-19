@@ -7,20 +7,25 @@ namespace GatewayWorker\Swoole;
 use Swoole\Server as SWServer;
 use Swoole\Timer as SWTimer;
 use Swoole\Server\Event as SWSEvent;
-use GatewayWorker\Swoole\GatewayProtocol;
 
 /**
  * 注册中心，用于注册 Gateway 和 Worker
  */
 class Register
 {
-    private array $timeout_timer_id_map;
-    private array $gateway_address_map;
-    private array $worker_fd_set;
-    private string $secret_key='';
+    private array $timeout_timer_id_map=array();
+    private array $gateway_address_map=array();
+    private array $worker_fd_set=array();
+    public string $secret_key='';
 
-    private SWServer $server;
+    private ?SWServer $server=null;
     private array $config;
+
+    /**
+     * 结构初始化
+     * @param string $ip
+     * @param int $port
+     */
     public function __construct(string $ip='127.0.0.1',int $port=1236){
         $this->config=[
             'open_websocket_protocol' => false,
@@ -47,19 +52,43 @@ class Register
             'enable_coroutine' => true,
             'task_enable_coroutine' => true
         ];
-        $this->server = new SWServer($ip, $port);
-        $this->server->set($this->config);
-        $this->server->on('Connect',array($this, 'onConnect'));
-        $this->server->on('Receive',array($this, 'onReceive'));
-        $this->server->on('Close',array($this, 'onClose'));
+        $this->createTCPServer($ip, $port);
     }
 
-    public function set($config){
+    /**
+     * 创建tcp服务
+     * @param string $ip
+     * @param int $port
+     */
+    private function createTCPServer(string $ip, int $port){
+        $this->server = new SWServer($ip, $port);
+        $this->server->set($this->config);
+        $this->server->on('Connect',function ($server,$event){
+            $this->onConnect($server, $event);
+        });
+        $this->server->on('Receive',function ($server,$event){
+            $this->onReceive($server, $event);
+        });
+        $this->server->on('Close',function ($server,$event){
+            $this->onClose($server, $event);
+        });
+    }
+
+    /**
+     * 设置配置文件
+     * @param array $config
+     */
+    public function set(array $config){
         $this->config=array_merge($this->config,$config);
         $this->server->set($this->config);
     }
 
-    private function onConnect(SWServer $server, SWSEvent $event): bool
+    /**
+     * 连接成功后触发的事件
+     * @param SWServer $server
+     * @param SWSEvent $event
+     */
+    private function onConnect(SWServer $server, SWSEvent $event): void
     {
         echo "fd:".$event->fd." Connected".PHP_EOL;
         $timer_id=SWTimer::after(10000, function () use ($server, $event) {
@@ -70,11 +99,17 @@ class Register
                 $server->close($event->fd);
             }
         });
+
+        //auth验证超时的定时器
         $this->timeout_timer_id_map[$event->fd]=$timer_id;
-        return true;
     }
 
-    private function onReceive(SWServer $server, SWSEvent $event): bool
+    /**
+     * tcp接收到流数据后触发的事件
+     * @param SWServer $server
+     * @param SWSEvent $event
+     */
+    private function onReceive(SWServer $server, SWSEvent $event): void
     {
         if(isset($this->timeout_timer_id_map[$event->fd])){
             SWTimer::clear($this->timeout_timer_id_map[$event->fd]);
@@ -90,13 +125,13 @@ class Register
                 if (empty($body['address'])) {
                     echo "address not found".PHP_EOL;
                     $server->close($event->fd);
-                    return false;
+                    return;
                 }
                 if ($secret_key !== $this->secret_key) {
                     //Worker::log("Register: Key does not match ".var_export($secret_key, true)." !== ".var_export($this->secretKey, true));
                     echo "Register: Key does not match ".var_export($secret_key, true)." !== ".var_export($this->secret_key, true).PHP_EOL;
                     $server->close($event->fd);
-                    return false;
+                    return;
                 }
                 $this->gateway_address_map[$event->fd] = $body['address'];
 
@@ -118,7 +153,7 @@ class Register
                     //Worker::log("Register: Key does not match ".var_export($secret_key, true)." !== ".var_export($secret_key_server, true));
                     echo "Register: Key does not match ".var_export($secret_key, true)." !== ".var_export($this->secret_key, true).PHP_EOL;
                     $server->close($event->fd);
-                    return false;
+                    return;
                 }
                 $this->worker_fd_set[$event->fd] = 1;
                 $data_to_worker = array(
@@ -142,12 +177,16 @@ class Register
                 //Worker::log("Register unknown event:$event IP: ".$client_info['remote_ip']." Buffer:$event->data. See http://doc2.workerman.net/register-auth-timeout.html");
                 echo "Register unknown cmd:".$cmd." Buffer:$event->data. See http://doc2.workerman.net/register-auth-timeout.html".PHP_EOL;
                 $server->close($event->fd);
-                return true;
         }
-        return true;
     }
 
-    private function onClose(SWServer $server, SWSEvent $event){
+    /**
+     * tcp关闭后触发的事件
+     * @param SWServer $server
+     * @param SWSEvent $event
+     */
+    private function onClose(SWServer $server, SWSEvent $event) : void
+    {
         if (isset($this->worker_fd_set[$event->fd])) {
             unset($this->worker_fd_set[$event->fd]);
         }
@@ -168,7 +207,12 @@ class Register
         }
     }
 
-    public function start(){
+    /**
+     * 开启服务
+     * @return mixed
+     */
+    public function start(): mixed
+    {
         return $this->server->start();
     }
 }
